@@ -1,0 +1,21 @@
+title Single Page app uusi muistiinpano
+
+selain-->palvelin: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+
+note over palvelin:
+pyyntöön liitetty Content-Type ilmoittaa 
+palvelimelle että mukana tuleva data on JSON-muotoista.
+palvelin vastaa koodilla 201 created.
+end note
+
+note over selain:
+selain ei lataa sivua uudelleen
+sillä javascript hoitaa tapahtumankäsittelyn
+ja estää e.preventDefaul() komennolla
+sivun uudelleen lataamisen. Tämän jälkeen
+koodi luo muistiinpanon ja lisää sen
+listalle
+end note
+
+palvelin-->selain: {message: "note created"}
+

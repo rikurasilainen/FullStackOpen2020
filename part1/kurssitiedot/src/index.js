@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 const App = () => {
-  //Kurssin osien tiedot listamuodossa
   const course = {
     name: 'Half Stack application development',
     parts: [
@@ -21,7 +20,6 @@ const App = () => {
     ]
   }
 
-  //App:in return palauttaa lopputuloksen.
   return (
     <div>
       <Header course={course.name} />
@@ -31,46 +29,38 @@ const App = () => {
   )
 }
 
-//Otsikon käsittely.
-const Header = (props) => {
-  console.log(props)
+const Header = ({course}) => {
   return (
     <div>
-      <h1>{props.course}</h1>
+      <h1>{course}</h1>
     </div>
   )
 }
 
-//Tehtävien ja tehtävämäärien osittaminen.
-const Part = (props) => {
-  console.log(props)
+const Part = ({part, exercises}) => {
   return (
     <div>
-      <p>{props.part} {props.exercises}</p>
+      <p>{part} {exercises}</p>
     </div>
   )
 }
 
-//Tehtävien ja tehtävämäärien käsittely Part:ia hyödyntäen.
-const Content = (props) => {
-  console.log(props)
+const Content = ({parts}) => {
   return (
     <div>
-      <Part part={props.parts[0].name} exercises={props.parts[0].exercises} />
-      <Part part={props.parts[1].name} exercises={props.parts[1].exercises} />
-      <Part part={props.parts[2].name} exercises={props.parts[2].exercises} />
+      <Part part={parts[0].name} exercises={parts[0].exercises} />
+      <Part part={parts[1].name} exercises={parts[1].exercises} />
+      <Part part={parts[2].name} exercises={parts[2].exercises} />
     </div>
   )
 }
 
-//Laskee tehtävät yhteen ja palauttaa lopputuloksen tekstin kera.
-const Total = (props) => {
-  console.log(props)
+const Total = ({total}) => {
   return (
     <div>
-      <p>Number of exercises {props.total[0].exercises + props.total[1].exercises + props.total[2].exercises}</p>
+      <p>Number of exercises {total[0].exercises + total[1].exercises + total[2].exercises}</p>
     </div>
   )
 }
-//Renderöi yllä olevan.
+
 ReactDOM.render(<App />, document.getElementById('root'))

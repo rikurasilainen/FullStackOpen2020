@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 import Filter from './components/Filter'
 import Form from './components/Form'
 import PersonsPrint from './components/PersonsPrint'
@@ -9,6 +10,15 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
   const [personsFiltered, setPersonsFiltered] = useState([])
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        setPersons(response.data)
+        setPersonsFiltered(response.data)
+      })
+  }, [])
 
   const addPerson = (event) => {
     event.preventDefault()

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios'
 import Filter from './components/Filter'
 import Form from './components/Form'
 import PersonsPrint from './components/PersonsPrint'
+import personService from './services/PersonService'
+import Notification from './components/Notification'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -10,13 +11,15 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
   const [personsFiltered, setPersonsFiltered] = useState([])
+  const [message, setMessage] = useState(null)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-        setPersonsFiltered(response.data)
+    personService
+      .getAll()
+      .then(initial => {
+        setPersons(initial)
+        setPersonsFiltered(initial)
       })
   }, [])
 
@@ -28,14 +31,55 @@ const App = () => {
     }
 
     if (persons.find(person => person.name === newName)) {
-      window.alert(`${newName} is already in the phonebook`)
+      if (window.confirm(`${newName} is already in the phonebook, replace the old number with a new one?`)) {
+
+        const id = persons.find(p => p.name === newName).id
+
+        personService
+          .changePerson(id, person)
+          .then(response => {
+            setPersonsFiltered(persons.map(person => person.name !== newName ? person : response))
+            setPersons(persons.map(person => person.name !== newName ? person : response))
+
+            setNewName('')
+            setNewNumber('')
+            event.target.reset()
+            handleNotification(`Phonenumber of ${person.name} changed`)
+
+          }).catch(() => {
+            setError(true)
+            handleNotification(`Information of ${person.name} has already been removed from the server`)
+            setPersons(persons.filter(person => person.id !== id))
+            setPersonsFiltered(persons.filter(person => person.id !== id))
+          })
+      }
+
     } else {
-      setPersons(persons.concat(person))
-      setPersonsFiltered(persons.concat(person))
+      personService
+        .addPersonServer(person)
+        .then(response => {
+          setPersons(persons.concat(response))
+          setPersonsFiltered(persons.concat(response))
+        })
       setNewName('')
       setNewNumber('')
       event.target.reset()
+      handleNotification(`${person.name} added to the phonebook`)
     }
+  }
+
+  const handleNotification = (message) => {
+    if (error) {
+      setMessage()
+      setTimeout(() => {
+        setMessage(null)
+        setError(false)
+      }, 5000)
+    }
+    setMessage(message)
+    setTimeout(() => {
+      setMessage(null)
+    }, 5000)
   }
 
   const handleNumber = (event) => {
@@ -47,17 +91,41 @@ const App = () => {
   }
 
   const handleFilter = (event) => {
+    setPersonsFiltered(persons
+      .filter(person => person.name.toLowerCase()
+      .includes(event.target.value.toLowerCase())))
     setFilter(event.target.value)
-    setPersonsFiltered(persons.filter(person => person.name.toLowerCase().includes(event.target.value.toLowerCase())))
+  }
+
+  const handleDelete = (name) => {
+
+    const id = persons.find(p => p.name === name).id
+
+    if (window.confirm(`Delete ${name}?`)) {
+      personService
+        .deletePerson(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id))
+          setPersonsFiltered(persons.filter(person => person.id !== id))
+          handleNotification(`${name} has been deleted from the phonebook`)
+
+        }).catch(() => {
+          setError(true)
+          handleNotification(`Information of ${name} has already been removed from the server`)
+          setPersons(persons.filter(person => person.id !== id))
+          setPersonsFiltered(persons.filter(person => person.id !== id))
+        })
+
+    }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification className='notification' message={message} error={error} />
       <Filter filter={filter} onChange={handleFilter} />
-      <h2>Add a new contact</h2>
       <Form handleAdd={handleAdd} handleNumber={handleNumber} name={newName} number={newNumber} addPerson={addPerson} />
-      <PersonsPrint personsFiltered={personsFiltered} />
+      <PersonsPrint personsFiltered={personsFiltered} handleDelete={handleDelete} />
     </div>
   )
 }
